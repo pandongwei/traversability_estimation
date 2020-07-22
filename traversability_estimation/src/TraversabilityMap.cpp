@@ -125,7 +125,7 @@ bool TraversabilityMap::readParameters() {
     }
   }
 
-  // Configure filter chain
+  // Configure filter chain 三个filter计算三个指标
   if (!filter_chain_.configure("traversability_map_filters", nodeHandle_)) {
     ROS_ERROR("Could not configure the filter chain!");
   }
@@ -211,7 +211,7 @@ bool TraversabilityMap::computeTraversability() {
   ros::WallTime start = ros::WallTime::now();
 
   if (elevationMapInitialized_) {
-    if (!filter_chain_.update(elevationMapCopy, traversabilityMapCopy)) {
+    if (!filter_chain_.update(elevationMapCopy, traversabilityMapCopy)) { // 这里直接调用update函数来计算粗糙度高度倾斜度，用来计算可通行性
       ROS_ERROR("Traversability Estimation: Could not update the filter chain! No traversability computed!");
       traversabilityMapInitialized_ = false;
       return false;
@@ -659,7 +659,7 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
   untraversablePolygon = grid_map::Polygon();  // empty untraversable polygon
   // Handle cases of footprints outside of map.
   boost::recursive_mutex::scoped_lock scopedLockForTraversabilityMap(traversabilityMapMutex_);
-  if (!traversabilityMap_.isInside(center)) {
+  if (!traversabilityMap_.isInside(center)) { //如果点不在计算范围内
     traversability = traversabilityDefault_;
     circleIsTraversable = traversabilityDefault_ != 0.0;
     if (computeUntraversablePolygon && !circleIsTraversable) {
@@ -681,14 +681,14 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
       int nCells = 0;
       traversability = 0.0;
 
-      // Iterate through polygon and check for traversability.
+      // Iterate through polygon and check for traversability.遍历邻域内的点
       double maxUntraversableRadius = 0.0;
       bool traversableRadiusBiggerMinRadius = false;
       for (grid_map::SpiralIterator iterator(traversabilityMap_, center, radiusMax);
            !iterator.isPastEnd() && !traversableRadiusBiggerMinRadius; ++iterator) {
         const bool currentPositionIsTraversale = isTraversableForFilters(*iterator);
         if (!currentPositionIsTraversale) {
-          const auto untraversableRadius = iterator.getCurrentRadius();
+          const auto untraversableRadius = iterator.getCurrentRadius();//当前半径
           maxUntraversableRadius = std::max(maxUntraversableRadius, untraversableRadius);
 
           if (radiusMin == 0.0) {
@@ -704,7 +704,7 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
               untraversablePositions.push_back(positionUntraversableCell);
             } else if (circleIsTraversable) {  // if circleIsTraversable is not changed by any previous loop
               auto factor = ((untraversableRadius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
-              traversability *= factor / nCells;
+              traversability *= factor / nCells;//可通行性更新，为何是乘？ TODO
               traversabilityMap_.at("traversability_footprint", indexCenter) = static_cast<float>(traversability);
               circleIsTraversable = true;
               traversableRadiusBiggerMinRadius = true;
@@ -730,7 +730,7 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
       }
 
       if (circleIsTraversable) {
-        traversability /= nCells;
+        traversability /= nCells; //取平均得到最终可通行性
         traversabilityMap_.at("traversability_footprint", indexCenter) = static_cast<float>(traversability);
       }
     }
@@ -906,7 +906,7 @@ bool TraversabilityMap::checkForRoughness(const grid_map::Index& index) {
       int nRoughness = 0;
       for (grid_map::CircleIterator circleIterator(traversabilityMap_, center, windowRadius); !circleIterator.isPastEnd();
            ++circleIterator) {
-        if (traversabilityMap_.at(roughnessType_, *circleIterator) == 0.0) nRoughness++;
+        if (traversabilityMap_.at(roughnessType_, *circleIterator) == 0.0) nRoughness++;//如果邻域内的点不可通行，粗糙度加一
         if (nRoughness > nRoughnessCritical) {
           traversabilityMap_.at("roughness_footprint", index) = 0.0;
           return false;

@@ -42,7 +42,7 @@ class RoughnessFilter : public FilterBase<T>
    * saves it as additional grid map layer.
    * The roughness traversability is set between 0.0 and 1.0, where a value of 1.0 means fully
    * traversable and 0.0 means not traversable. NAN indicates unknown values (terrain).
-   * @param mapIn grid map containing elevation map and surface normals.
+   * @param mapIn grid map containing elevation map and surface normals. 是整个地图
    * @param mapOut grid map containing mapIn and roughness traversability values.
    */
   virtual bool update(const T& mapIn, T& mapOut);

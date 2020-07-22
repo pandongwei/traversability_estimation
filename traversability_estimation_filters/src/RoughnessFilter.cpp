@@ -76,11 +76,11 @@ bool RoughnessFilter<T>::update(const T& mapIn, T& mapOut)
   mapOut = mapIn;
   mapOut.add(type_);
   double roughnessMax = 0.0;
-
+  // 遍历地图中的每一点
   for (GridMapIterator iterator(mapOut);
       !iterator.isPastEnd(); ++iterator) {
 
-    // Check if this is an empty cell (hole in the map).
+    // Check if this is an empty cell (hole in the map).是空点则跳过
     if (!mapOut.isValid(*iterator, "surface_normal_x")) continue;
 
     // Prepare data computation.
@@ -110,10 +110,12 @@ bool RoughnessFilter<T>::update(const T& mapIn, T& mapOut)
     double normalZ = mapOut.at("surface_normal_z", *iterator);
     double planeParameter = mean.x()*normalX + mean.y()*normalY + mean.z()*normalZ;
     double sum = 0.0;
+    // 计算每点到平面的距离平方，求和
     for (int i = 0; i < nPoints; i++) {
       double dist = normalX*points(0,i) + normalY*points(1,i) + normalZ*points(2,i) - planeParameter;
       sum += pow(dist,2);
     }
+    // 粗糙度定义为标准差
     double roughness = sqrt(sum / (nPoints -1));
 
     if (roughness < criticalValue_) {

@@ -115,7 +115,7 @@ bool StepFilter<T>::update(const T& mapIn, T& mapOut)
     height = mapOut.at("elevation", *iterator);
     double heightMax, heightMin;
 
-    // Requested position (center) of circle in map.
+    // Requested position (center) of circle in map.每个点设立一个邻域
     Eigen::Vector2d center;
     mapOut.getPosition(*iterator, center);
 
@@ -139,7 +139,7 @@ bool StepFilter<T>::update(const T& mapIn, T& mapOut)
         heightMin = height;
     }
 
-    if (init)
+    if (init) // 计算邻域内的最高点和最低点，计算出每一点的领域高度差
       mapOut.at("step_height", *iterator) = heightMax - heightMin;
   }
 
