@@ -898,7 +898,7 @@ bool TraversabilityMap::checkForRoughness(const grid_map::Index& index) {
     if (!traversabilityMap_.isValid(index, "roughness_footprint")) {
       double windowRadius = 3.0 * traversabilityMap_.getResolution();  // TODO: read this as a parameter?
       double criticalLength = maxGapWidth_ / 3.0;
-      int nRoughnessCritical = floor(1.5 * windowRadius * criticalLength / pow(traversabilityMap_.getResolution(), 2));
+      int nRoughnessCritical = floor(1.5 * windowRadius * criticalLength / pow(traversabilityMap_.getResolution(), 2)); //设定粗糙度阈值
 
       // Requested position (center) of circle in map.
       grid_map::Position center;
